@@ -1,0 +1,33 @@
+config {
+  type: "table"
+}
+
+${when(session.config.vars.ecommerce_warehouse_order_sources, `
+
+with t_orders_merge_list as
+  (
+    ${actions.stg_orders.order_sources.map(source => `
+
+      select
+        '${source}' as source,
+        *
+        from ${sql.ref('stg_' + source + '_orders')}
+      
+      ${session.config.vars[index] != order_sources.length - 1 ? `union all` : ""}
+      `).join("")}
+  )
+select
+    *,
+    datediff(
+    lag(created_timestamp,1) over (PARTITION BY customer_id ORDER BY created_timestamp),
+    'created_timestamp',
+    'day'
+  ) as days_since_last_order,
+    datediff(
+    min(created_timestamp) over (PARTITION BY customer_id),
+    'created_timestamp',
+    'month'
+  ) as months_since_first_order
+from
+    t_orders_merge_list
+`, "")}

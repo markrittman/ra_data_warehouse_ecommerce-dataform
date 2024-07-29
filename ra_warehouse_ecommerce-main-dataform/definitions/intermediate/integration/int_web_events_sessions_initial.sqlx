@@ -1,0 +1,37 @@
+config {
+  type: "table",
+  materialized: "table"
+}
+
+${ when(session.config.vars.product_warehouse_event_sources, `
+{
+  var partition_by = "partition by session_id";
+
+  var window_clause = "partition by session_id order by event_number rows between unbounded preceding and unbounded following";
+
+  var first_values = {
+    'utm_source' : 'utm_source',
+    'utm_content' : 'utm_content',
+    'utm_medium' : 'utm_medium',
+    'utm_campaign' : 'utm_campaign',
+    'utm_term' : 'utm_term',
+    'search' : 'search',
+    'gclid' : 'gclid',
+    'page_url' : 'first_page_url',
+    'page_url_host' : 'first_page_url_host',
+    'page_url_path' : 'first_page_url_path',
+    'referrer_host' : 'referrer_host',
+    'device' : 'device',
+    'device_category' : 'device_category',
+  }
+
+  var last_values = {
+    'page_url' : 'last_page_url',
+    'page_url_host' : 'last_page_url_host',
+    'page_url_path' : 'last_page_url_path',
+  }
+}
+// Rest of the SQLX script.
+`) } ${ otherwise(`
+
+`) }

@@ -1,0 +1,42 @@
+module.exports = {
+  wh_companies_dim: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Companies Dimension",
+    columns: {
+      company_pk: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+      company_name: {
+        tests: [
+          ctx.unique({severity: 'warn'}),
+          ctx.not_null({severity: 'warn'}),
+        ],
+      },
+    },
+  }),
+  wh_contacts_dim: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Contacts Dimension",
+    columns: {
+      contact_pk: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+      contact_name: {
+        tests: [
+          ctx.unique({severity: 'warn'}),
+          ctx.not_null({severity: 'warn'}),
+        ],
+      },
+    },
+  }),
+};

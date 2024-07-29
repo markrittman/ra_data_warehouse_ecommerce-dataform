@@ -1,0 +1,26 @@
+config {
+  type: "table",
+  enabled: false
+}
+
+${ when(var('marketing_warehouse_ad_campaign_performance_sources'), `
+
+with ad_campaign_performance as
+  (
+
+    ${ var('marketing_warehouse_ad_campaign_performance_sources').map((source, index, array) => `
+
+      select
+        '${source}' as source,
+        *
+        from ${ref('stg_' + source + '_campaign_performance')}
+
+        ${ index < array.length - 1 ? `union all` : `` }
+      
+`).join('') }
+
+
+  )
+select * from ad_campaign_performance
+
+`) } ${ otherwise(``) }

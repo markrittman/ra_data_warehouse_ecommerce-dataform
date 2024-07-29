@@ -1,0 +1,42 @@
+config {
+  type: "table",
+  enabled: false
+}
+
+${ when(var('product_warehouse_event_sources'), `
+
+with events_merge_list as
+  (
+    ${{ var('product_warehouse_event_sources').map(source => `
+
+
+      {% set relation_source = 'stg_' + source + '_events' %}
+
+      select
+        '{{source}}' as source,
+        *
+        from {{ ref(relation_source) }}
+
+        ${ when(not loop.last, `union all`) }
+      
+`).join('') }}
+  )
+
+
+select
+  e.*
+
+from events_merge_list e
+
+${ when(var("enable_event_type_mapping"), `
+left outer join
+  ${ref('event_mapping_list')} m
+on
+  e.event_type = m.event_type_original
+`) }
+
+`) } ${ otherwise(`
+
+
+
+`) }

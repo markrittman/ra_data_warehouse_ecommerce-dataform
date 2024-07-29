@@ -1,0 +1,27 @@
+config {
+  type: "table",
+  enabled: false
+}
+
+{
+  var ecommerce_warehouse_product_sources = var('ecommerce_warehouse_product_sources');
+  
+  if (ecommerce_warehouse_product_sources && ecommerce_warehouse_product_sources.length > 0) {
+    
+    var t_products_merge_list = ecommerce_warehouse_product_sources.map(source => `
+      select
+        '${source}' as source,
+        *
+        from ${ref('stg_' + source + '_products')}
+        ${ ecommerce_warehouse_product_sources[ecommerce_warehouse_product_sources.length - 1] !== source ? 'union all' : ''}
+      `;
+    }).join('');
+    
+    return `
+      with t_products_merge_list as (${t_products_merge_list})
+      select * from t_products_merge_list
+    `;
+  } else {
+    return '';
+  }
+}

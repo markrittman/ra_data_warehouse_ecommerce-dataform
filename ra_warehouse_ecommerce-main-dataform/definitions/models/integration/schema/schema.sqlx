@@ -1,0 +1,30 @@
+module.exports = {
+  int_contacts: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Contacts Dimension Staging",
+    columns: {
+      all_contact_ids: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+    },
+  }),
+  int_companies: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Contacts Dimension Staging",
+    columns: {
+      all_company_ids: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+    },
+  }),
+};

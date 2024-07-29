@@ -1,0 +1,16 @@
+module.exports = {
+  wh_deals_fact: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Deals Facts",
+    columns: {
+      deal_pk: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+    },
+  }),
+};

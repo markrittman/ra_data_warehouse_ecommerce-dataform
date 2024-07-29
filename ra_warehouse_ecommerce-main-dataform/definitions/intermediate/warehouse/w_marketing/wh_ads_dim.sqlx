@@ -1,0 +1,20 @@
+config {
+  type: "table",
+  unique_key='campaign_pk': None,
+  alias='ads_dim': None
+}
+
+${ when(var("marketing_warehouse_ad_sources"), `
+
+
+
+
+WITH ads AS
+  (
+  SELECT * from ${ref('int_ads')}
+)
+select TO_HEX(MD5(CONCAT(CAST(ad_id AS STRING)))) as ad_pk,
+       a.*
+from ads a
+
+`) } ${ otherwise(`  `) }

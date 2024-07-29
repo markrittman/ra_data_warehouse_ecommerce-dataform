@@ -1,0 +1,23 @@
+config {
+  type: "table",
+  enabled: false
+}
+
+${ when(session.vars('marketing_warehouse_ad_group_sources'), `
+  with ad_groups as
+    (
+      ${
+        session.vars('marketing_warehouse_ad_group_sources').map((source, index, array) => `
+          select
+            '${source}' as source,
+            *
+            from ${ref(`stg_${source}_ad_groups`)}
+            ${ index < array.length - 1 ? 'union all' : '' }
+        `).join('')
+      }
+    )
+  select * from ad_groups
+`)
+} ${ otherwise(`
+
+`) }

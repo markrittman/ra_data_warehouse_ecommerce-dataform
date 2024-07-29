@@ -1,0 +1,18 @@
+config {
+  type: "table",
+  enabled=false: None
+}
+
+${ when(!dataform.projectConfig.vars.enable_mailchimp_email_source or (!dataform.projectConfig.vars.enable_marketing_warehouse), `
+
+`) } ${ otherwise(`
+
+`) }
+
+WITH lists AS
+  (
+  SELECT * from ${ref('int_email_lists')}
+)
+select TO_HEX(MD5(CONCAT(CAST(list_id AS STRING)))) as list_pk,
+       l.*
+from lists l

@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "{{ var('stg_facebook_ads_fivetran_database') }}",
+  schema: "{{ var('stg_facebook_ads_fivetran_schema') }}",
+  name: "ad_adsets"
+}

@@ -1,0 +1,32 @@
+config {
+  type: "table",
+  enabled: false
+}
+
+${
+  if(var('finance_warehouse_payment_sources')) {
+`
+
+WITH payments_merge_list AS (
+
+  ${ var('finance_warehouse_payment_sources').map((source, index, arr) => `
+
+    {% set relation_source = 'stg_' + source + '_payments' %}
+
+    select
+      '${source}' as source,
+      *
+      from ${ ref(relation_source) }
+
+      ${ index < arr.length - 1 ? `union all` : `` }
+    
+  `).join('') }
+
+)
+SELECT
+  *
+FROM
+  payments_merge_list
+
+`
+}

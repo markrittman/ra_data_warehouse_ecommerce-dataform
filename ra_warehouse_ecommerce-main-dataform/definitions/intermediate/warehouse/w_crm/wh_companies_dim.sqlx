@@ -1,0 +1,19 @@
+config {
+  type: "table",
+  alias='companies_dim': None
+}
+
+${ when(var("crm_warehouse_company_sources"), `
+
+
+
+WITH companies_dim as (
+  SELECT
+    TO_HEX(MD5(CONCAT(CAST(company_name AS STRING)))) as company_pk,
+    *
+  FROM
+    ${ref('int_companies')} c
+)
+select * from companies_dim
+
+`) } ${ otherwise(`  `) }

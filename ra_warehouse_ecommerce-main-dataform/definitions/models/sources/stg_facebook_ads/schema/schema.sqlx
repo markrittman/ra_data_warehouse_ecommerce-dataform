@@ -1,0 +1,92 @@
+module.exports = {
+  stg_facebook_ads_campaigns: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Facebook Ads Ads",
+    columns: {
+      ad_campaign_id: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+          ctx.dbt_utils.not_constant(),
+        ],
+      },
+      ad_campaign_name: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+          ctx.dbt_utils.not_constant(),
+        ],
+      },
+      ad_campaign_status: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+    },
+  }),
+  stg_facebook_ads_ad_groups: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Facebook Ads Ad Groups",
+    columns: {
+      ad_group_id: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+          ctx.dbt_utils.not_constant(),
+        ],
+      },
+      ad_group_name: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+          ctx.dbt_utils.not_constant(),
+        ],
+      },
+      ad_campaign_id: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+          ctx.dbt_utils.not_constant(),
+          ctx.relationships({to: "ref('stg_facebook_ads_campaigns')", field: 'ad_campaign_id', severity: 'warn'}),
+        ],
+      },
+    },
+  }),
+  stg_facebook_ads: (
+    ctx: dataform.Context,
+    ref: dataform.Ref
+  ) => ({
+    description: "Facebook Ads Ads",
+    columns: {
+      ad_id: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+        ],
+      },
+      ad_status: {
+        tests: [
+          ctx.not_null(),
+        ],
+      },
+      ad_type: {
+        tests: [
+          ctx.not_null(),
+        ],
+      },
+      ad_group_id: {
+        tests: [
+          ctx.unique(),
+          ctx.not_null(),
+          ctx.dbt_utils.not_constant(),
+          ctx.relationships({to: "ref('stg_facebook_ads_ad_groups')", field: 'ad_group_id', severity: 'warn'}),
+        ],
+      },
+    },
+  }),
+};

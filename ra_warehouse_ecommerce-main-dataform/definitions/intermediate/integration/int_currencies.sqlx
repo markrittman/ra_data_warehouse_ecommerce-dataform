@@ -1,0 +1,28 @@
+config {
+  type: "table",
+  enabled: false
+}
+
+${ when(var('finance_warehouse_payment_sources'), `
+
+WITH t_currencies_merge_list AS (
+
+  ${{ var('finance_warehouse_payment_sources').map(source => `
+
+    {% set relation_source = 'stg_' + source + '_currencies' %}
+
+    select
+      '${source}' as source,
+      *
+      from ${ ref(relation_source) }
+
+      ${ when(not loop.last, `union all`) }
+    
+`).join('') }}
+)
+SELECT
+  *
+FROM
+  t_currencies_merge_list
+
+`) } ${ otherwise(`  `) }

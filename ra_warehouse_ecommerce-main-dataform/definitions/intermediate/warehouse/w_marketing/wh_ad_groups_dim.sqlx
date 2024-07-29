@@ -1,0 +1,23 @@
+config {
+  type: "table",
+  unique_key='campaign_pk': None,
+  alias='ad_groups_dim': None
+}
+
+{{config
+  (enabled =
+      (target.type == 'redshift' and var("stg_google_ads_etl") == 'segment')
+   )
+}}
+${ when(var("marketing_warehouse_ad_campaign_sources"), `
+
+
+WITH ad_groups AS
+  (
+  SELECT * from ${ref('int_ad_ad_groups')}
+)
+select TO_HEX(MD5(CONCAT(CAST(ad_group_id AS STRING))))  as ad_group_pk,
+       a.*
+from ad_groups a
+
+`) }

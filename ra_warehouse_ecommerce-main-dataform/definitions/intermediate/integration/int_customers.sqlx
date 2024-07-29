@@ -1,0 +1,4 @@
+sql
+config {
+  type: "table"
+}

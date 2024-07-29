@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "{{ var('stg_facebook_ads_stitch_database') }}",
+  schema: "{{ var('stg_facebook_ads_stitch_schema') }}",
+  name: "adsets"
+}

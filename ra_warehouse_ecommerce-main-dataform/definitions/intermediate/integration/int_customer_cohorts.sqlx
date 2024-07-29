@@ -1,0 +1,24 @@
+config {
+  type: "table",
+  materialized: "table"
+}
+
+${ when(session.config.vars.ecommerce_warehouse_customer_cohorts_sources.length > 0, `
+
+with customer_cohorts_merge_list as
+  (
+    ${
+      session.config.vars.ecommerce_warehouse_customer_cohorts_sources.map(source => `
+
+      select
+        '${source}' as source,
+        *
+        from ${ref('stg_' + source + '_customer_cohorts')}
+      
+      `).join('union all')}
+  )
+select * from customer_cohorts_merge_list
+
+`) } ${ otherwise(`
+
+`) }
