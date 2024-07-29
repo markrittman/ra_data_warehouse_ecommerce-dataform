@@ -1,0 +1,19 @@
+config {
+  type: "table"
+}
+
+${ when(var('ecommerce_warehouse_transaction_sources'), `
+
+with transactions_merge_list as (
+  ${var('ecommerce_warehouse_transaction_sources').map((source, i, arr) => `
+    select
+      '${source}' as source,
+      *
+    from ${ref('stg_' + source + '_transactions')}
+    
+    ${i < arr.length - 1 ? 'union all' : ''}
+  `).join('')}
+)
+select * from transactions_merge_list
+
+`) } ${ otherwise(``) }

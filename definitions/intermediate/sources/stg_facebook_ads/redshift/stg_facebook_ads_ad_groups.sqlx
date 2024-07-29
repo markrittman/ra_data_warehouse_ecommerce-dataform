@@ -1,0 +1,6 @@
+config {
+  type: "table"
+  enabled: ${target.type == 'redshift' ? 'true' : 'null'}
+  dependencies: ["dependencies_file"]
+}
+....

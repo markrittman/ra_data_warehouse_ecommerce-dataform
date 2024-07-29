@@ -1,0 +1,76 @@
+config {
+  type: "table",
+  enabled: (target.type == 'redshift')
+}
+
+${ when(var("ecommerce_warehouse_order_lines_sources"), `
+${ when('shopify_ecommerce' in var("ecommerce_warehouse_order_lines_sources"), `
+
+with source as (
+
+  select * from ${ref('shopify__order_lines')}
+
+),
+     order_lines_tax as (
+
+       select
+              order_line_id,
+              title as tax_type,
+              price as tax_amount,
+              rate as tax_rate
+        from shopify.tax_line t
+       where index =
+       (select max(index) from shopify.tax_line d where d.order_line_id = t.order_line_id)
+
+     ),
+     product as (
+
+     select
+            id,
+            product_type
+     from shopify.product
+   ),
+joined as (
+  SELECT
+    o.*,
+    p.product_type,
+    t.tax_type,
+    t.tax_amount,
+    t.tax_rate
+  FROM
+    source o
+  LEFT JOIN
+    product p
+  ON o.product_id = p.id
+  LEFT JOIN
+    order_lines_tax t
+  ON o.order_line_id = t.order_line_id
+)
+,
+renamed as (
+    select
+      fulfillable_quantity ,
+      ...
+      variant_is_requiring_shipping,
+      case when lower(variant_title) like '%sample%' or lower(product_type) like '%sample box%' then 'Sample'
+           when lower(variant_title) not like '%sample%' and lower(title) not like '%paint brochure%'
+            and lower(variant_title) not like '%default title%' and lower(product_type) not like '%supplies%'
+            and lower(product_type) not like '%service%' and product_type is not null then 'Product' end as Product_or_Sample
+    from joined
+),
+calculated as (
+  select
+    *,
+    CASE WHEN Product_or_Sample = 'Sample' THEN
+				quantity
+			END AS sample_order_quantity,
+		CASE WHEN Product_or_Sample = 'Product' THEN
+				quantity
+			END AS product_order_quantity
+  from
+    renamed
+)
+select * from calculated
+
+`) } ${ otherwise(`  `) }
+`) } ${ otherwise(`  `) }

@@ -1,0 +1,69 @@
+config {
+  type: "table",
+  enabled: target.type == 'redshift'
+}
+
+${ when(var("marketing_warehouse_ad_performance_sources"), `
+  ${ when('facebook_ads' in var("marketing_warehouse_ad_performance_sources"), `
+    ${ when(var("stg_facebook_ads_etl") == 'stitch', `
+      WITH source AS (
+        {{ filter_stitch_relation(relation=var('stg_facebook_ads_stitch_ad_performance_table'),unique_column='id') }}
+      ),
+      
+      renamed_face AS (
+      SELECT
+          date_start                 as ad_serve_ts,
+          cast(ad_id as string)      as ad_id,
+          safe_divide(spend,clicks)  AS ad_avg_cost,
+          cast(null as timestamp)    as ad_avg_time_on_site,
+          cast(null as float64)      as ad_bounce_rate,
+          cast(null as int64)        as ad_total_assisted_conversions,
+          clicks                     as ad_total_clicks,
+          impressions                as ad_total_impressions,
+          reach                      as ad_total_reach,
+          unique_clicks              as ad_total_unique_clicks,
+          unique_impressions         as ad_total_unique_impressions,
+          cast(null as float64)      as ad_total_conversion_value,
+          spend                      as ad_total_cost,
+          'Facebook Ads'             as ad_network
+      FROM
+        source)
+    `)}
+    
+    ${ when(var("stg_facebook_ads_etl") == 'segment', `
+      WITH source AS (
+        {{ filter_segment_relation(relation=var('stg_facebook_ads_segment_ad_performance_table')) }}
+      ),
+      
+      renamed_seg AS (
+      SELECT
+          date_start                  as ad_serve_ts,
+          cast(ad_id as varchar)      as ad_id,
+          {{ safe_divide('spend','clicks') }}   AS ad_avg_cost,
+          cast(null as float)         as ad_avg_time_on_site,
+          cast(null as float)         as ad_bounce_rate,
+          cast(null as int)           as ad_total_assisted_conversions,
+          clicks                      as ad_total_clicks,
+          impressions                 as ad_total_impressions,
+          reach                       as ad_total_reach,
+          unique_clicks               as ad_total_unique_clicks,
+          unique_impressions          as ad_total_unique_impressions,
+          cast(null as float)         as ad_total_conversion_value,
+          spend                       as ad_total_cost,
+          'Facebook Ads'              as ad_network
+      FROM
+        source)
+    `)}
+
+  SELECT
+    *
+  FROM
+    renamed_face
+  UNION ALL
+  SELECT
+    *
+  FROM
+   renamed_seg
+
+  `)} ${ otherwise(`  `) }
+`) } ${ otherwise(`  `) }

@@ -1,0 +1,27 @@
+config {
+  type: "table",
+  enabled: ${
+      (dataform.projectConfig.warehouse === 'redshift' && dataform.projectConfig.vars["stg_google_ads_etl"] === 'segment') ? 'true' : 'false'
+  }
+}
+
+${ sql.when(dataform.projectConfig.vars["marketing_warehouse_ad_group_sources"], `
+${ sql.when(('google_ads' in dataform.projectConfig.vars["marketing_warehouse_ad_group_sources"]), `
+
+with source as (
+  ${js.stg_google_ads_segment_ad_groups_table(state)}
+),
+renamed as (
+  SELECT cast(id as varchar) as ad_group_id,
+         name as ad_group_name,
+         status as ad_group_status,
+         cast(campaign_id as varchar) ad_campaign_id,
+         'Google Ads' as ad_network
+  FROM source )
+select
+ *
+from
+ renamed
+
+`)}  ${ sql.otherwise(`-- google_ads not in marketing_warehouse_ad_group_sources`) }
+`).otherwise(`-- marketing_warehouse_ad_group_sources not required`) }

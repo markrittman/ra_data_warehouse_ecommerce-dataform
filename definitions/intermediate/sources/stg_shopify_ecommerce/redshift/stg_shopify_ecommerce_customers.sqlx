@@ -1,0 +1,34 @@
+config {
+  type: "table",
+  enabled: target.type == 'redshift' ? true : false
+}
+
+${when(var("ecommerce_warehouse_customer_sources"), `
+
+  ${when('shopify_ecommerce' in var("ecommerce_warehouse_customer_sources"), `
+
+    with source as (
+      select * from ${ref('shopify__customers')}
+    ),
+
+    customer_tags as (
+      select * from ${ref(var('stg_shopify_ecommerce_fivetran_customer_tags_table'))}
+    ),
+
+    sample_orders as (
+      select
+        created_timestamp,
+        of.customer_id as customer_id,
+        of.order_id as order_id
+      from ${ref('stg_shopify_ecommerce_orders')} of
+      join ${ref('stg_shopify_ecommerce_order_lines')} ol
+      on of.order_id = ol.order_id
+      where ol.product_or_sample = 'Sample'
+      group by 1,2,3
+    ),
+
+    ---- rest of your code here ...
+
+    else false end 
+    `)} 
+else false end )

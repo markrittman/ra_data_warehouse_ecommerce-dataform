@@ -1,0 +1,33 @@
+config {
+  type: "table",
+  enabled: "${target.type == 'redshift'}"
+}
+
+${ when(var("ecommerce_warehouse_customer_cohorts_sources"), `
+  ${ when('shopify_ecommerce' in var("ecommerce_warehouse_customer_cohorts_sources"), `
+    
+    with source as (
+      select * from ${ref('shopify__customer_cohorts')}
+    ),
+    renamed as (
+        select
+          date_month ,
+          customer_id ,
+          first_order_timestamp ,
+          cohort_month ,
+          source_relation ,
+          order_count_in_month ,
+          total_price_in_month ,
+          line_item_count_in_month ,
+          total_price_lifetime ,
+          order_count_lifetime ,
+          line_item_count_lifetime ,
+          cohort_month_number ,
+          customer_cohort_id
+        from source
+    )
+    select * from renamed
+  `)}
+  ${ otherwise(`-- Otherwise condition not met`) }
+`)}
+${ otherwise(`-- Otherwise condition not met`)}
